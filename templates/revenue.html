@@ -1,0 +1,177 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ky">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cafe Pro | Статистика</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-grid"></div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg premium-navbar px-3 px-lg-4">
+        <div class="container-fluid p-0">
+            <div class="d-flex align-items-center gap-3">
+                <div class="nav-logo"><i class="fas fa-coffee"></i></div>
+                <div>
+                    <span class="navbar-brand mb-0 d-block">Cafe Pro</span>
+                    <small class="text-white-50">Статистика</small>
+                </div>
+            </div>
+            <div class="d-flex align-items-center text-white gap-3">
+                <a href="{% url 'dashboard' %}" class="btn btn-outline-light btn-sm rounded-pill px-3">
+                    <i class="fas fa-arrow-left me-1"></i>Артка
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container-fluid px-3 px-lg-4 py-4">
+
+        <!-- СТАТИСТИКА КАРТОЧКАЛАРЫ -->
+        <section class="row g-3 mb-4">
+            <div class="col-6 col-xl-3">
+                <div class="stat-card glass-card">
+                    <div class="stat-icon amber"><i class="fas fa-sun"></i></div>
+                    <div>
+                        <div class="stat-label">Бүгүнкү киреше</div>
+                        <div class="stat-value">{{ today_revenue }} сом</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-xl-3">
+                <div class="stat-card glass-card">
+                    <div class="stat-icon green"><i class="fas fa-calendar"></i></div>
+                    <div>
+                        <div class="stat-label">Айлык киреше</div>
+                        <div class="stat-value">{{ month_revenue }} сом</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-xl-3">
+                <div class="stat-card glass-card">
+                    <div class="stat-icon blue"><i class="fas fa-receipt"></i></div>
+                    <div>
+                        <div class="stat-label">Бүгүнкү заказдар</div>
+                        <div class="stat-value">{{ today_orders_count }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-xl-3">
+                <div class="stat-card glass-card">
+                    <div class="stat-icon red"><i class="fas fa-chart-line"></i></div>
+                    <div>
+                        <div class="stat-label">Айлык заказдар</div>
+                        <div class="stat-value">{{ month_orders_count }}</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="row g-4 mb-4">
+            <!-- ГРАФИК -->
+            <div class="col-xl-8">
+                <div class="glass-card panel-card">
+                    <span class="section-kicker">АКЫРКЫ 7 КҮН</span>
+                    <h4 class="mt-1 mb-4"><i class="fas fa-chart-bar me-2"></i>Күндүк киреше</h4>
+                    <canvas id="revenueChart" height="100"></canvas>
+                </div>
+            </div>
+
+            <!-- ЭҢ КОП САТЫЛГАН -->
+            <div class="col-xl-4">
+                <div class="glass-card panel-card">
+                    <span class="section-kicker">ТОП ТАМАКТАР</span>
+                    <h4 class="mt-1 mb-4"><i class="fas fa-fire me-2"></i>Эң көп сатылган</h4>
+                    {% for item in top_items %}
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="stat-icon amber" style="width:36px;height:36px;font-size:0.9rem;">
+                                {{ forloop.counter }}
+                            </div>
+                            <span>{{ item.menu_item__name }}</span>
+                        </div>
+                        <span class="mini-info">{{ item.total_qty }} дана</span>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted text-center py-4">Маалымат жок</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <!-- АКЫРКЫ ЗАКАЗДАР -->
+        <section class="glass-card p-4">
+            <span class="section-kicker">АКЫРКЫ ЗАКАЗДАР</span>
+            <h4 class="mt-1 mb-4"><i class="fas fa-receipt me-2"></i>Акыркы 10 заказ</h4>
+            <div class="table-responsive order-table-wrap">
+                <table class="table align-middle order-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Заказ №</th>
+                            <th>Стол</th>
+                            <th>Официант</th>
+                            <th>Сумма</th>
+                            <th>Жабылган</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in all_orders %}
+                        <tr>
+                            <td><strong>#{{ order.id }}</strong></td>
+                            <td>Стол №{{ order.table.number }}</td>
+                            <td>{{ order.waiter.username }}</td>
+                            <td class="total-cell">{{ order.total }} сом</td>
+                            <td>{{ order.closed_at|date:"d.m.Y H:i" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">Заказдар жок</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const weekData = {{ week_data|safe }};
+        const labels = weekData.map(d => d.date);
+        const revenues = weekData.map(d => d.revenue);
+
+        new Chart(document.getElementById('revenueChart'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Киреше (сом)',
+                    data: revenues,
+                    backgroundColor: 'rgba(242, 179, 93, 0.35)',
+                    borderColor: '#f2b35d',
+                    borderWidth: 2,
+                    borderRadius: 10,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { labels: { color: '#eef2ff' } }
+                },
+                scales: {
+                    x: { ticks: { color: '#9fb1c9' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                    y: { ticks: { color: '#9fb1c9' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

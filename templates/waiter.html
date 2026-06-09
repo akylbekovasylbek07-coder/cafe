@@ -109,18 +109,23 @@
                     </div>
                     <div class="tables-grid mt-4">
                         {% for table in tables %}
-                        <a href="{% url 'table_detail' table.id %}" class="text-decoration-none">
-                            <div class="table-card {% if table.status == 'busy' %}table-busy{% else %}table-free{% endif %}">
-                                <div class="table-status-badge">
-                                    {% if table.status == 'busy' %}Ээленген{% else %}Бош{% endif %}
+                            <a href="{% url 'table_detail' table.id %}" class="text-decoration-none">
+                                <div class="table-card {% if table.status == 'busy' %}table-busy{% else %}table-free{% endif %} {% if table.id in my_tables %}my-table{% endif %}">
+                                    {% if table.id in my_tables %}
+                                    <div class="my-table-badge">
+                                        <i class="fas fa-user me-1"></i>Менин
+                                    </div>
+                                    {% endif %}
+                                    <div class="table-status-badge">
+                                        {% if table.status == 'busy' %}Ээленген{% else %}Бош{% endif %}
+                                    </div>
+                                    <div class="table-number">№{{ table.number }}</div>
+                                    <div class="table-info">{{ table.seats }} орун ·
+                                        {% if table.status == 'busy' %}Заказ ачык{% else %}Күтүп турат{% endif %}
+                                    </div>
                                 </div>
-                                <div class="table-number">№{{ table.number }}</div>
-                                <div class="table-info">{{ table.seats }} орун ·
-                                    {% if table.status == 'busy' %}Заказ ачык{% else %}Күтүп турат{% endif %}
-                                </div>
-                            </div>
-                        </a>
-                        {% endfor %}
+                            </a>
+                            {% endfor %}
                     </div>
                 </div>
             </div>

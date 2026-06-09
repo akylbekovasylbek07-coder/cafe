@@ -786,3 +786,19 @@ small,
 .menu-card-form {
     display: contents;
 }
+.my-table {
+    border-color: rgba(242, 179, 93, 0.8) !important;
+    box-shadow: 0 0 0 3px rgba(242, 179, 93, 0.2);
+}
+
+.my-table-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background: rgba(242, 179, 93, 0.2);
+    color: var(--gold-2);
+    margin-bottom: 8px;
+}
