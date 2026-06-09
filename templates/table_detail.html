@@ -1,0 +1,213 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ky">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cafe Pro | Стол №{{ table.number }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-grid"></div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg premium-navbar px-3 px-lg-4">
+        <div class="container-fluid p-0">
+            <div class="d-flex align-items-center gap-3">
+                <div class="nav-logo"><i class="fas fa-coffee"></i></div>
+                <div>
+                    <span class="navbar-brand mb-0 d-block">Cafe Pro</span>
+                    <small class="text-white-50">Стол №{{ table.number }}</small>
+                </div>
+            </div>
+            <div class="d-flex align-items-center text-white gap-3 flex-wrap justify-content-end">
+                <span class="shift-pill">
+                    <i class="fas fa-clock me-1"></i>Смена:
+                    <span>{% if active_shift %}Ачык{% else %}Жабык{% endif %}</span>
+                </span>
+                <span class="user-pill"><i class="fas fa-user-circle me-2"></i>{{ request.user.username }}</span>
+                <a href="{% url 'waiter' %}" class="btn btn-outline-light btn-sm rounded-pill px-3">
+                    <i class="fas fa-arrow-left me-1"></i>Артка
+                </a>
+                <a href="{% url 'logout' %}" class="btn btn-outline-light btn-sm rounded-pill px-3">
+                    <i class="fas fa-sign-out-alt me-1"></i>Чыгуу
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container-fluid px-3 px-lg-4 py-4">
+        <section class="row g-4">
+
+            <!-- СОЛ: ЗАКАЗ -->
+            <div class="col-xl-5">
+                <div class="glass-card panel-card">
+                    <div class="panel-head d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="section-kicker">ACTIVE ORDER</span>
+                            <h4 class="mb-1"><i class="fas fa-receipt me-2"></i>Стол №{{ table.number }}</h4>
+                            <small class="text-muted">
+                                {% if active_order %}Заказ ачык{% else %}Заказ жок{% endif %}
+                            </small>
+                        </div>
+                        {% if active_order %}
+                        <form method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="pay">
+                            <button class="btn btn-success rounded-pill px-3">
+                                <i class="fas fa-money-bill-wave me-2"></i>Төлөтүү ({{ order_total }} с)
+                            </button>
+                        </form>
+                        {% else %}
+                        <form method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="open_order">
+                            <button class="btn btn-primary rounded-pill px-3">
+                                <i class="fas fa-plus me-2"></i>Заказ ачуу
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+
+                    {% if active_order %}
+                    <div class="table-responsive order-table-wrap mt-3">
+                        <table class="table align-middle order-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Тамак</th>
+                                    <th class="text-center">Саны</th>
+                                    <th class="text-end">Баасы</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order_items %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">{{ item.menu_item.name }}</div>
+                                        <small class="text-muted">{{ item.menu_item.category.name }}</small>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="d-flex align-items-center justify-content-center gap-2">
+                                            <form method="POST" class="d-inline">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="remove_item">
+                                                <input type="hidden" name="item_id" value="{{ item.menu_item.id }}">
+                                                <button class="btn btn-sm btn-outline-secondary rounded-circle px-2">−</button>
+                                            </form>
+                                            <span class="fw-bold">{{ item.quantity }}</span>
+                                            <form method="POST" class="d-inline">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="add_item">
+                                                <input type="hidden" name="item_id" value="{{ item.menu_item.id }}">
+                                                <button class="btn btn-sm btn-outline-secondary rounded-circle px-2">+</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                    <td class="text-end">{{ item.subtotal }} с</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted py-4">
+                                        <i class="fas fa-utensils me-2"></i>Тамак кошулган жок
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="2" class="text-end fw-semibold">Жалпы:</td>
+                                    <td class="text-end total-cell">{{ order_total }} сом</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-chair fa-3x mb-3 d-block"></i>
+                        Стол бош. Заказ ачуу үчүн баскычты басыңыз.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- ОҢ: МЕНЮ -->
+            <div class="col-xl-7">
+                <div class="glass-card panel-card">
+                    <div class="panel-head d-flex justify-content-between align-items-center gap-2 flex-wrap">
+                        <div>
+                            <span class="section-kicker">SMART MENU</span>
+                            <h4 class="mb-1"><i class="fas fa-utensils me-2"></i>Меню</h4>
+                            <small class="text-muted">Тамак кошуу үчүн карточканы басыңыз</small>
+                        </div>
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="menu-search" placeholder="Тамак издөө...">
+                        </div>
+                    </div>
+
+                    <div class="menu-filters mt-3">
+                        <button class="filter-chip active" onclick="filterMenu('all', this)">Баары</button>
+                        {% for cat in categories %}
+                        <button class="filter-chip" onclick="filterMenu('{{ cat.name }}', this)">{{ cat.name }}</button>
+                        {% endfor %}
+                    </div>
+
+                    <div class="menu-grid mt-4">
+                        {% for item in menu_items %}
+                        {% if item.is_available %}
+                        <form method="POST" class="menu-card-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="add_item">
+                            <input type="hidden" name="item_id" value="{{ item.id }}">
+                            <button type="submit" class="menu-card w-100 text-start border-0 bg-transparent"
+                                data-category="{{ item.category.name }}"
+                                {% if not active_order %}disabled title="Алдын заказ ачыңыз"{% endif %}>
+                                {% if item.image %}
+                                <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                                {% else %}
+                                <div class="menu-no-image"><i class="fas fa-utensils"></i></div>
+                                {% endif %}
+                                <div class="menu-card-body">
+                                    <span class="menu-cat-badge">{{ item.category.name }}</span>
+                                    <div class="menu-name">{{ item.name }}</div>
+                                    <div class="menu-price">{{ item.price }} с</div>
+                                </div>
+                            </button>
+                        </form>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function filterMenu(category, btn) {
+            document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.querySelectorAll('.menu-card').forEach(card => {
+                if (category === 'all' || card.dataset.category === category) {
+                    card.closest('.menu-card-form').style.display = '';
+                } else {
+                    card.closest('.menu-card-form').style.display = 'none';
+                }
+            });
+        }
+
+        document.getElementById('menu-search').addEventListener('input', function() {
+            const val = this.value.toLowerCase();
+            document.querySelectorAll('.menu-card').forEach(card => {
+                const name = card.querySelector('.menu-name').textContent.toLowerCase();
+                card.closest('.menu-card-form').style.display = name.includes(val) ? '' : 'none';
+            });
+        });
+    </script>
+</body>
+</html>
